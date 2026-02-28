@@ -13,7 +13,8 @@
       "Bash(netstat:*)",
       "Bash(findstr:*)",
       "Bash(node:*)",
-      "Bash(del \"c:\\\\Projects\\\\claude code\\\\liftingdiarycourse\\\\list-tables.js\")"
+      "Bash(del \"c:\\\\Projects\\\\claude code\\\\liftingdiarycourse\\\\list-tables.js\")",
+      "Bash(npx shadcn@latest add:*)"
     ]
   },
   "spinnerTipsEnabled": false
