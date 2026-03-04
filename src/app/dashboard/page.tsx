@@ -1,6 +1,8 @@
+import Link from "next/link";
 import { format } from "date-fns";
 import { getWorkoutsByDate } from "@/data/workouts";
 import { WorkoutCalendar } from "./workout-calendar";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -15,14 +17,19 @@ type Props = {
 
 export default async function DashboardPage({ searchParams }: Props) {
   const { date: dateParam } = await searchParams;
-  const date = dateParam ? new Date(dateParam) : new Date();
+  const date = dateParam ? new Date(dateParam + "T00:00:00") : new Date();
 
   const workouts = await getWorkoutsByDate(date);
 
   return (
     <main className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <Button asChild>
+            <Link href="/dashboard/workout/new">Log New Workout</Link>
+          </Button>
+        </div>
         <WorkoutCalendar />
       </div>
 

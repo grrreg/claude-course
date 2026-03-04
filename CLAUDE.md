@@ -13,6 +13,8 @@ This is a Next.js 15.5.3 application with TypeScript and Tailwind CSS v4, using 
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
 
+**IMPORTANT**: Always run `npm run lint` after running `npm run build` to ensure code quality.
+
 ## Code Generation Guidelines
 
 **IMPORTANT**: When generating any code, ALWAYS first refer to the relevant documentation files within the `/docs` directory to understand existing patterns, conventions, and best practices before implementation:
