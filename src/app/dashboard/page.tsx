@@ -50,7 +50,8 @@ export default async function DashboardPage({ searchParams }: Props) {
           ) : (
             <div className="grid gap-4">
               {workouts.map((workout) => (
-                <Card key={workout.id}>
+                <Link key={workout.id} href={`/dashboard/workout/${workout.id}`} className="block">
+                <Card>
                   <CardHeader>
                     <CardTitle>{workout.name}</CardTitle>
                     <CardDescription>
@@ -81,6 +82,7 @@ export default async function DashboardPage({ searchParams }: Props) {
                     </div>
                   </CardContent>
                 </Card>
+                </Link>
               ))}
             </div>
           )}
