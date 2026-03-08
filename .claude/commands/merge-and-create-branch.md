@@ -1,0 +1,1 @@
+add all changes into the staging area and commit any changes in the current branch and provide a suitable commit message based on the code changes. then merge the current branch into the main branch and resolve any issues off the back of that merge. first push the changes and then create a new branch called $ARGUMENTS.

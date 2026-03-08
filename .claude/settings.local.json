@@ -15,7 +15,8 @@
       "Bash(node:*)",
       "Bash(del \"c:\\\\Projects\\\\claude code\\\\liftingdiarycourse\\\\list-tables.js\")",
       "Bash(npx shadcn@latest add:*)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(clear:*)"
     ]
   },
   "spinnerTipsEnabled": false
