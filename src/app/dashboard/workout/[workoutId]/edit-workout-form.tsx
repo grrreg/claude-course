@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { updateWorkoutAction } from "./actions";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ interface EditWorkoutFormProps {
 }
 
 export function EditWorkoutForm({ workout }: EditWorkoutFormProps) {
+  const router = useRouter();
   const [name, setName] = useState(workout.name);
   const [date, setDate] = useState<Date>(new Date(workout.startedAt));
   const [time, setTime] = useState(() => {
@@ -121,9 +123,14 @@ export function EditWorkoutForm({ workout }: EditWorkoutFormProps) {
             <p className="text-sm text-destructive">{errors._form[0]}</p>
           )}
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : "Save Changes"}
-          </Button>
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" className="flex-1" onClick={() => router.push("/dashboard")}>
+              Cancel
+            </Button>
+            <Button type="submit" className="flex-1" disabled={isSubmitting}>
+              {isSubmitting ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
         </form>
       </CardContent>
     </Card>

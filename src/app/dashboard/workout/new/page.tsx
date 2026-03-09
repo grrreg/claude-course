@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { createWorkoutAction } from "./actions";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ import {
 } from "@/components/ui/popover";
 
 export default function NewWorkoutPage() {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [date, setDate] = useState<Date>(new Date());
   const [time, setTime] = useState(() => {
@@ -111,9 +113,14 @@ export default function NewWorkoutPage() {
               <p className="text-sm text-destructive">{errors._form[0]}</p>
             )}
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? "Creating..." : "Create Workout"}
-            </Button>
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" className="flex-1" onClick={() => router.push("/dashboard")}>
+                Cancel
+              </Button>
+              <Button type="submit" className="flex-1" disabled={isSubmitting}>
+                {isSubmitting ? "Creating..." : "Create Workout"}
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
