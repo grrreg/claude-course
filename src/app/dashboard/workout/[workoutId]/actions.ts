@@ -1,7 +1,12 @@
 "use server";
 
 import { z } from "zod";
-import { updateWorkout } from "@/data/workouts";
+import { updateWorkout, getWorkoutById } from "@/data/workouts";
+import { addExerciseToWorkout, removeExerciseFromWorkout } from "@/data/exercises";
+import { addSet, updateSet, deleteSet } from "@/data/sets";
+import { db } from "@/db";
+import { workoutExercises, sets } from "@/db/schema";
+import { eq, count } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -51,5 +56,227 @@ export async function updateWorkoutAction(input: UpdateWorkoutInput) {
   }
 
   revalidatePath("/dashboard");
-  redirect("/dashboard");
+  revalidatePath(`/dashboard/workout/${validated.data.workoutId}`);
+  redirect(`/dashboard/workout/${validated.data.workoutId}`);
+}
+
+const AddExerciseSchema = z.object({
+  workoutId: z.string().uuid("Invalid workout ID"),
+  exerciseId: z.string().uuid("Invalid exercise ID"),
+});
+
+type AddExerciseInput = z.infer<typeof AddExerciseSchema>;
+
+export async function addExerciseAction(input: AddExerciseInput) {
+  const validated = AddExerciseSchema.safeParse(input);
+
+  if (!validated.success) {
+    return {
+      success: false as const,
+      errors: validated.error.flatten().fieldErrors,
+    };
+  }
+
+  const workout = await getWorkoutById(validated.data.workoutId);
+
+  if (!workout) {
+    return {
+      success: false as const,
+      errors: { _form: ["Workout not found or unauthorized"] },
+    };
+  }
+
+  try {
+    const [{ value: orderCount }] = await db
+      .select({ value: count() })
+      .from(workoutExercises)
+      .where(eq(workoutExercises.workoutId, validated.data.workoutId));
+
+    await addExerciseToWorkout({
+      workoutId: validated.data.workoutId,
+      exerciseId: validated.data.exerciseId,
+      order: orderCount + 1,
+    });
+  } catch {
+    return {
+      success: false as const,
+      errors: { _form: ["Failed to add exercise"] },
+    };
+  }
+
+  revalidatePath(`/dashboard/workout/${validated.data.workoutId}`);
+  return { success: true as const, data: undefined };
+}
+
+const RemoveExerciseSchema = z.object({
+  workoutExerciseId: z.string().uuid("Invalid workout exercise ID"),
+  workoutId: z.string().uuid("Invalid workout ID"),
+});
+
+type RemoveExerciseInput = z.infer<typeof RemoveExerciseSchema>;
+
+export async function removeExerciseAction(input: RemoveExerciseInput) {
+  const validated = RemoveExerciseSchema.safeParse(input);
+
+  if (!validated.success) {
+    return {
+      success: false as const,
+      errors: validated.error.flatten().fieldErrors,
+    };
+  }
+
+  const workout = await getWorkoutById(validated.data.workoutId);
+
+  if (!workout) {
+    return {
+      success: false as const,
+      errors: { _form: ["Workout not found or unauthorized"] },
+    };
+  }
+
+  try {
+    await removeExerciseFromWorkout(validated.data.workoutExerciseId);
+  } catch {
+    return {
+      success: false as const,
+      errors: { _form: ["Failed to remove exercise"] },
+    };
+  }
+
+  revalidatePath(`/dashboard/workout/${validated.data.workoutId}`);
+  return { success: true as const, data: undefined };
+}
+
+const AddSetSchema = z.object({
+  workoutExerciseId: z.string().uuid("Invalid workout exercise ID"),
+  workoutId: z.string().uuid("Invalid workout ID"),
+  weight: z.string().optional(),
+  reps: z.coerce.number().int().positive().optional(),
+});
+
+type AddSetInput = z.infer<typeof AddSetSchema>;
+
+export async function addSetAction(input: AddSetInput) {
+  const validated = AddSetSchema.safeParse(input);
+
+  if (!validated.success) {
+    return {
+      success: false as const,
+      errors: validated.error.flatten().fieldErrors,
+    };
+  }
+
+  const workout = await getWorkoutById(validated.data.workoutId);
+
+  if (!workout) {
+    return {
+      success: false as const,
+      errors: { _form: ["Workout not found or unauthorized"] },
+    };
+  }
+
+  try {
+    const [{ value: setCount }] = await db
+      .select({ value: count() })
+      .from(sets)
+      .where(eq(sets.workoutExerciseId, validated.data.workoutExerciseId));
+
+    await addSet({
+      workoutExerciseId: validated.data.workoutExerciseId,
+      setNumber: setCount + 1,
+      weight: validated.data.weight,
+      reps: validated.data.reps,
+    });
+  } catch {
+    return {
+      success: false as const,
+      errors: { _form: ["Failed to add set"] },
+    };
+  }
+
+  revalidatePath(`/dashboard/workout/${validated.data.workoutId}`);
+  return { success: true as const, data: undefined };
+}
+
+const UpdateSetSchema = z.object({
+  setId: z.string().uuid("Invalid set ID"),
+  workoutId: z.string().uuid("Invalid workout ID"),
+  weight: z.string().optional(),
+  reps: z.coerce.number().int().positive().optional(),
+});
+
+type UpdateSetInput = z.infer<typeof UpdateSetSchema>;
+
+export async function updateSetAction(input: UpdateSetInput) {
+  const validated = UpdateSetSchema.safeParse(input);
+
+  if (!validated.success) {
+    return {
+      success: false as const,
+      errors: validated.error.flatten().fieldErrors,
+    };
+  }
+
+  const workout = await getWorkoutById(validated.data.workoutId);
+
+  if (!workout) {
+    return {
+      success: false as const,
+      errors: { _form: ["Workout not found or unauthorized"] },
+    };
+  }
+
+  try {
+    await updateSet(validated.data.setId, {
+      weight: validated.data.weight,
+      reps: validated.data.reps,
+    });
+  } catch {
+    return {
+      success: false as const,
+      errors: { _form: ["Failed to update set"] },
+    };
+  }
+
+  revalidatePath(`/dashboard/workout/${validated.data.workoutId}`);
+  return { success: true as const, data: undefined };
+}
+
+const DeleteSetSchema = z.object({
+  setId: z.string().uuid("Invalid set ID"),
+  workoutId: z.string().uuid("Invalid workout ID"),
+});
+
+type DeleteSetInput = z.infer<typeof DeleteSetSchema>;
+
+export async function deleteSetAction(input: DeleteSetInput) {
+  const validated = DeleteSetSchema.safeParse(input);
+
+  if (!validated.success) {
+    return {
+      success: false as const,
+      errors: validated.error.flatten().fieldErrors,
+    };
+  }
+
+  const workout = await getWorkoutById(validated.data.workoutId);
+
+  if (!workout) {
+    return {
+      success: false as const,
+      errors: { _form: ["Workout not found or unauthorized"] },
+    };
+  }
+
+  try {
+    await deleteSet(validated.data.setId);
+  } catch {
+    return {
+      success: false as const,
+      errors: { _form: ["Failed to delete set"] },
+    };
+  }
+
+  revalidatePath(`/dashboard/workout/${validated.data.workoutId}`);
+  return { success: true as const, data: undefined };
 }

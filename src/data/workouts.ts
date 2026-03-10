@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { workouts, workoutExercises, exercises, sets } from "@/db/schema";
+import { workouts } from "@/db/schema";
 import { auth } from "@clerk/nextjs/server";
 import { eq, and, gte, lt } from "drizzle-orm";
 
@@ -57,6 +57,35 @@ export async function getWorkoutById(id: string) {
 
   return result ?? null;
 }
+
+export async function getWorkoutWithExercises(id: string) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
+  const result = await db.query.workouts.findFirst({
+    where: and(eq(workouts.id, id), eq(workouts.userId, userId)),
+    with: {
+      workoutExercises: {
+        orderBy: (workoutExercises, { asc }) => [asc(workoutExercises.order)],
+        with: {
+          exercise: true,
+          sets: {
+            orderBy: (sets, { asc }) => [asc(sets.setNumber)],
+          },
+        },
+      },
+    },
+  });
+
+  return result ?? null;
+}
+
+export type WorkoutWithExercisesAndSets = NonNullable<
+  Awaited<ReturnType<typeof getWorkoutWithExercises>>
+>;
 
 export async function updateWorkout(
   id: string,

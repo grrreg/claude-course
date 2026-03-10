@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { format } from "date-fns";
 import { getWorkoutsByDate } from "@/data/workouts";
 import { WorkoutCalendar } from "./workout-calendar";
@@ -32,7 +33,9 @@ export default async function DashboardPage({ searchParams }: Props) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div>
-          <WorkoutCalendar />
+          <Suspense>
+            <WorkoutCalendar />
+          </Suspense>
         </div>
 
         <section>

@@ -124,7 +124,7 @@ export function EditWorkoutForm({ workout }: EditWorkoutFormProps) {
           )}
 
           <div className="flex gap-2">
-            <Button type="button" variant="outline" className="flex-1" onClick={() => router.push("/dashboard")}>
+            <Button type="button" variant="outline" className="flex-1" onClick={() => router.push(`/dashboard/workout/${workout.id}`)}>
               Cancel
             </Button>
             <Button type="submit" className="flex-1" disabled={isSubmitting}>
