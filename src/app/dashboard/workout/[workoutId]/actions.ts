@@ -12,7 +12,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 const UpdateWorkoutSchema = z.object({
-  workoutId: z.string().uuid("Invalid workout ID"),
+  workoutId: z.string().min(1, "Invalid workout ID"),
   name: z.string().min(1, "Name is required").max(100, "Name is too long"),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format"),
   time: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format"),
@@ -61,8 +61,8 @@ export async function updateWorkoutAction(input: UpdateWorkoutInput) {
 }
 
 const AddExerciseSchema = z.object({
-  workoutId: z.string().uuid("Invalid workout ID"),
-  exerciseId: z.string().uuid("Invalid exercise ID"),
+  workoutId: z.string().min(1, "Invalid workout ID"),
+  exerciseId: z.string().min(1, "Invalid exercise ID"),
 });
 
 type AddExerciseInput = z.infer<typeof AddExerciseSchema>;
@@ -74,6 +74,15 @@ export async function addExerciseAction(input: AddExerciseInput) {
     return {
       success: false as const,
       errors: validated.error.flatten().fieldErrors,
+    };
+  }
+
+  const { userId } = await auth();
+
+  if (!userId) {
+    return {
+      success: false as const,
+      errors: { _form: ["Unauthorized"] },
     };
   }
 
@@ -95,9 +104,10 @@ export async function addExerciseAction(input: AddExerciseInput) {
     await addExerciseToWorkout({
       workoutId: validated.data.workoutId,
       exerciseId: validated.data.exerciseId,
-      order: orderCount + 1,
+      order: Number(orderCount) + 1,
     });
-  } catch {
+  } catch (e) {
+    console.error("[addExerciseAction] error:", e);
     return {
       success: false as const,
       errors: { _form: ["Failed to add exercise"] },
@@ -109,8 +119,8 @@ export async function addExerciseAction(input: AddExerciseInput) {
 }
 
 const RemoveExerciseSchema = z.object({
-  workoutExerciseId: z.string().uuid("Invalid workout exercise ID"),
-  workoutId: z.string().uuid("Invalid workout ID"),
+  workoutExerciseId: z.string().min(1),
+  workoutId: z.string().min(1),
 });
 
 type RemoveExerciseInput = z.infer<typeof RemoveExerciseSchema>;
@@ -148,8 +158,8 @@ export async function removeExerciseAction(input: RemoveExerciseInput) {
 }
 
 const AddSetSchema = z.object({
-  workoutExerciseId: z.string().uuid("Invalid workout exercise ID"),
-  workoutId: z.string().uuid("Invalid workout ID"),
+  workoutExerciseId: z.string().min(1),
+  workoutId: z.string().min(1),
   weight: z.string().optional(),
   reps: z.coerce.number().int().positive().optional(),
 });
@@ -183,7 +193,7 @@ export async function addSetAction(input: AddSetInput) {
 
     await addSet({
       workoutExerciseId: validated.data.workoutExerciseId,
-      setNumber: setCount + 1,
+      setNumber: Number(setCount) + 1,
       weight: validated.data.weight,
       reps: validated.data.reps,
     });
@@ -199,8 +209,8 @@ export async function addSetAction(input: AddSetInput) {
 }
 
 const UpdateSetSchema = z.object({
-  setId: z.string().uuid("Invalid set ID"),
-  workoutId: z.string().uuid("Invalid workout ID"),
+  setId: z.string().min(1),
+  workoutId: z.string().min(1),
   weight: z.string().optional(),
   reps: z.coerce.number().int().positive().optional(),
 });
@@ -243,8 +253,8 @@ export async function updateSetAction(input: UpdateSetInput) {
 }
 
 const DeleteSetSchema = z.object({
-  setId: z.string().uuid("Invalid set ID"),
-  workoutId: z.string().uuid("Invalid workout ID"),
+  setId: z.string().min(1),
+  workoutId: z.string().min(1),
 });
 
 type DeleteSetInput = z.infer<typeof DeleteSetSchema>;

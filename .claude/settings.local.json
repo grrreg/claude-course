@@ -16,7 +16,8 @@
       "Bash(del \"c:\\\\Projects\\\\claude code\\\\liftingdiarycourse\\\\list-tables.js\")",
       "Bash(npx shadcn@latest add:*)",
       "Bash(npx eslint:*)",
-      "Bash(clear:*)"
+      "Bash(clear:*)",
+      "Bash(find \"C:\\\\Projects\\\\claude code\\\\liftingdiarycourse/src/app/dashboard/workout\" -type f -name \"*.ts\" -o -name \"*.tsx\" 2>/dev/null | head -50)"
     ]
   },
   "spinnerTipsEnabled": false

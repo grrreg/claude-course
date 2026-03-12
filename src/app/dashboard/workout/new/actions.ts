@@ -38,12 +38,13 @@ export async function createWorkoutAction(input: CreateWorkoutInput) {
   const [hours, minutes] = validated.data.time.split(":").map(Number);
   const startedAt = new Date(year, month - 1, day, hours, minutes, 0, 0);
 
-  await createWorkout({
+  const workout = await createWorkout({
     userId,
     name: validated.data.name,
     startedAt,
   });
 
   revalidatePath("/dashboard");
-  redirect("/dashboard");
+  revalidatePath(`/dashboard/workout/${workout.id}`);
+  redirect(`/dashboard/workout/${workout.id}`);
 }
